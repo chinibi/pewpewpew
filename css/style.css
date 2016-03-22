@@ -1,0 +1,19 @@
+body {
+  width: 800px;
+}
+
+canvas {
+  border: 1px solid black;
+}
+/*#game {z-index: 2;}
+#targets {z-index: 1;}*/
+
+.sliders {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+#powerslider, #angleslider {
+  width:200px;
+}
