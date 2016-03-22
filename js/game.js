@@ -6,14 +6,36 @@ var sv = {
   vMax : 15, // projectile max speed
   g : 8 / 60, // gravity constant
   projR : 6, // projectile radius
-  tank : {
+  active: 0, // whose turn is it
+  // tank : {
+  //   power: 50,
+  //   angle: 45,
+  //   x: 30,
+  //   y: 30,
+  //   draw: drawTank
+  //   },
+  player0 : {
     power: 50,
     angle: 45,
+    score: 0,
     x: 30,
     y: 30,
+    angle: 45,
     draw: drawTank
-    }
+    },
+  player1 : {
+    power: 50,
+    angle: 45,
+    score: 0,
+    x: 30,
+    y: 30,
+    angle: 45,
+    draw: drawTank
+    },
+  player : [sv.player0, sv.player1]
 }
+
+arr = [sv.player0, sv.player1]
 
 /////// EVENT LISTENERS ///////
 
@@ -22,29 +44,25 @@ var sv = {
   // sliders
   $('#powerslider').on('input', function(){
     $('#powerclicker').val( $(this).val() )
-    sv.tank.power = $(this).val()
-    wipe()
-    redrawTargets()
+    sv.player[sv.active].power = $(this).val()
+    refresh()
   })
   $('#angleslider').on('input', function(){
     $('#angleclicker').val( $(this).val() )
-    sv.tank.angle = $(this).val()
-    wipe()
-    redrawTargets()
+    sv.player[sv.active].angle = $(this).val()
+    refresh()
   })
 
   // direct number input for fine tuned control
   $('#powerclicker').on('change', function(){
     $('#powerslider').val($(this).val())
-    sv.tank.power = $(this).val()
-    wipe()
-    redrawTargets()
+    sv.player[sv.active].power = $(this).val()
+    refresh()
   })
   $('#angleclicker').on('change', function(){
     $('#angleslider').val($(this).val())
-    sv.tank.angle = $(this).val()
-    wipe()
-    redrawTargets()
+    sv.player[sv.active].angle = $(this).val()
+    refresh()
   })
 
   ///////FIRE CANNON/////////
@@ -68,9 +86,18 @@ var ctx = canvas.getContext('2d')
 ctx.translate(0, canvas.height)
 ctx.scale(1,-1)
 
-function drawTank() {
+function scoreboard() {
   ctx.save();
-  ctx.translate(sv.tank.x, sv.tank.y);
+  ctx.scale(1,-1)
+  ctx.font = "36px lucida grande";
+  ctx.fillText("Player 1: " + sv.player0.score.toString(), 30, -550);
+  ctx.fillText("Player 2: " + sv.player1.score.toString(), 580, -550);
+  ctx.restore();
+}
+
+function drawTank(x, y, player) {
+  ctx.save();
+  ctx.translate(x, y);
   ctx.beginPath();
   // dome
   ctx.arc(0, 0, 10, 0, Math.PI);
@@ -93,18 +120,20 @@ function drawTank() {
   ctx.stroke();
   // barrel
   ctx.moveTo(0, 0);
-  ctx.rotate(sv.tank.angle * (Math.PI / 180));
-  ctx.fillRect(0, -1, 23, 3)
+  var normRot = ctx.rotate(sv.player[player].angle * (Math.PI / 180))
+  var rvrsRot = ctx.rotate((-sv.player[player].angle * (Math.PI / 180) + Math.PI));
+  player === 0 ? normRot : rvrsRot
+  ctx.fillRect(0, -1.5, 23, 3)
   ctx.restore();
 }
 
 function Ball() {
-  this.x = sv.tank.x
-  this.y = sv.tank.y
+  this.x = sv.player[sv.active].x
+  this.y = sv.player[sv.active].y
   this.r = sv.projR
-  this.vNaught = (sv.tank.power / 100) * sv.vMax
-  this.vx = this.vNaught * Math.cos(sv.tank.angle * (Math.PI / 180))
-  this.vy = this.vNaught * Math.sin(sv.tank.angle * (Math.PI / 180))
+  this.vNaught = (sv.player[sv.active].power / 100) * sv.vMax
+  this.vx = this.vNaught * Math.cos(sv.player[sv.active].angle * (Math.PI / 180))
+  this.vy = this.vNaught * Math.sin(sv.player[sv.active].angle * (Math.PI / 180))
   this.color = 'black'
   this.draw = function() {
     ctx.beginPath()
@@ -116,8 +145,8 @@ function Ball() {
 }
 
 function Target() {
-  this.x = 50 + canvas.width * Math.random()
-  this.y = canvas.height * Math.random()
+  this.x = 50 + (canvas.width-50-14) * Math.random()
+  this.y = 64 + (canvas.height-120) * Math.random()
   this.r = 14
   this.draw = function() {
     ctx.beginPath()
@@ -137,11 +166,14 @@ function wipe() {
   ctx.clearRect(0, 0, canvas.width, canvas.height)
 }
 
-function redrawTargets() {
+function refresh() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
   for (var i=0; i<sv.targets.length; i++) {
     sv.targets[i].draw()
   }
-  sv.tank.draw()
+  player1.draw(player1.x, player1.y, 1)
+  player2.draw(player2.x, player2.y, 2)
+  scoreboard()
 }
 
 function didCollide() {
@@ -166,8 +198,7 @@ function renderFrame() {
     sv.ballMoving = true;
     requestAnimationFrame(renderFrame)
 
-    wipe()
-    redrawTargets()
+    refresh()
 
     ball.x += ball.vx
     ball.y += ball.vy
@@ -177,19 +208,21 @@ function renderFrame() {
 
   else if (didCollide()) {
     sv.targets.splice( didCollide()[1], 1)
-    wipe()
-    redrawTargets()
+    refresh()
     sv.ballMoving = false
+    sv.active = (sv.active == 0 ? 1 : 0)
     return
   }
 
   else {
-    wipe()
-    redrawTargets()
+    refresh()
     sv.ballMoving = false
+    sv.active = (sv.active == 0 ? 1 : 0)
     return
   }
 }
 
 drawTargets(5)
-sv.tank.draw()
+scoreboard()
+sv.player0.draw(sv.player0.x, sv.player0.y, 0)
+sv.player1.draw(sv.player1.x, sv.player1.y, 1)
