@@ -2,17 +2,17 @@
 
 var sv = {
   ballMoving : false,
-  targets : [],
-  // trying to calibrate vMax and g so that the canvas represents the tank's entire range
-  vMax : 15,
-  // gravity. change in vy every frame assuming 60 fps
-  g : 8 / 60,
+  targets : [], // targets array
+  vMax : 15, // projectile max speed
+  g : 8 / 60, // gravity constant
+  projR : 6, // projectile radius
   tank : {
     power: 50,
     angle: 45,
     x: 30,
-    y: 30
-  }
+    y: 30,
+    draw: drawTank
+    }
 }
 
 /////// EVENT LISTENERS ///////
@@ -23,25 +23,33 @@ var sv = {
   $('#powerslider').on('input', function(){
     $('#powerclicker').val( $(this).val() )
     sv.tank.power = $(this).val()
+    wipe()
+    redrawTargets()
   })
   $('#angleslider').on('input', function(){
     $('#angleclicker').val( $(this).val() )
     sv.tank.angle = $(this).val()
+    wipe()
+    redrawTargets()
   })
 
   // direct number input for fine tuned control
   $('#powerclicker').on('change', function(){
     $('#powerslider').val($(this).val())
     sv.tank.power = $(this).val()
+    wipe()
+    redrawTargets()
   })
   $('#angleclicker').on('change', function(){
     $('#angleslider').val($(this).val())
     sv.tank.angle = $(this).val()
+    wipe()
+    redrawTargets()
   })
 
   ///////FIRE CANNON/////////
-  $('#fire').click( function() {
-    if (sv.ballMoving === false) {
+  $('#FIRE').click( function() {
+    if (!sv.ballMoving) {
       ball = new Ball()
       renderFrame()
     }
@@ -60,10 +68,40 @@ var ctx = canvas.getContext('2d')
 ctx.translate(0, canvas.height)
 ctx.scale(1,-1)
 
+function drawTank() {
+  ctx.save();
+  ctx.translate(sv.tank.x, sv.tank.y);
+  ctx.beginPath();
+  // dome
+  ctx.arc(0, 0, 10, 0, Math.PI);
+  ctx.stroke();
+  // treads
+  ctx.moveTo(  0,  0);
+  ctx.lineTo(-20,  0);
+  ctx.lineTo(-15,-10);
+  ctx.lineTo( 15,-10);
+  ctx.lineTo( 20,  0);
+  ctx.lineTo(  0,  0);
+  ctx.stroke();
+  // wheels
+  ctx.moveTo(0, 0);
+  ctx.arc(  0, -5, 5, Math.PI/2, Math.PI/2 + 2*Math.PI);
+  ctx.moveTo(-10, 0);
+  ctx.arc(-10, -5, 5, Math.PI/2, Math.PI/2 + 2*Math.PI);
+  ctx.moveTo(10,0);
+  ctx.arc( 10, -5, 5, Math.PI/2, Math.PI/2 + 2*Math.PI);
+  ctx.stroke();
+  // barrel
+  ctx.moveTo(0, 0);
+  ctx.rotate(sv.tank.angle * (Math.PI / 180));
+  ctx.fillRect(0, -1, 23, 3)
+  ctx.restore();
+}
+
 function Ball() {
-  this.x = 30
-  this.y = 30
-  this.r = 6
+  this.x = sv.tank.x
+  this.y = sv.tank.y
+  this.r = sv.projR
   this.vNaught = (sv.tank.power / 100) * sv.vMax
   this.vx = this.vNaught * Math.cos(sv.tank.angle * (Math.PI / 180))
   this.vy = this.vNaught * Math.sin(sv.tank.angle * (Math.PI / 180))
@@ -95,15 +133,20 @@ function drawTargets(n) {
   }
 }
 
+function wipe() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
+}
+
 function redrawTargets() {
   for (var i=0; i<sv.targets.length; i++) {
     sv.targets[i].draw()
   }
+  sv.tank.draw()
 }
 
 function didCollide() {
   for (var i=0; i < sv.targets.length; i++) {
-    var quad = Math.pow( Math.abs(ball.x - sv.targets[i].x), 2) + Math.pow( Math.abs(ball.y - sv.targets[i].y), 2)
+    var quad = Math.pow( ball.x - sv.targets[i].x, 2) + Math.pow( ball.y - sv.targets[i].y, 2)
     var d = Math.sqrt(quad)
 
     if (d < ball.r + sv.targets[i].r) {
@@ -123,26 +166,25 @@ function renderFrame() {
     sv.ballMoving = true;
     requestAnimationFrame(renderFrame)
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    wipe()
     redrawTargets()
 
     ball.x += ball.vx
     ball.y += ball.vy
     ball.vy -= sv.g
-
     ball.draw()
   }
 
   else if (didCollide()) {
     sv.targets.splice( didCollide()[1], 1)
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    wipe()
     redrawTargets()
     sv.ballMoving = false
     return
   }
 
   else {
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    wipe()
     redrawTargets()
     sv.ballMoving = false
     return
@@ -150,5 +192,4 @@ function renderFrame() {
 }
 
 drawTargets(5)
-var ball = new Ball()
-ball.draw()
+sv.tank.draw()
