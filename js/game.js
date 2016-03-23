@@ -119,16 +119,26 @@ function drawTank(x, y, t) {
   ctx.stroke();
   // barrel
   ctx.moveTo(0, 0);
-
   if (t===0) {
     ctx.rotate(player[0].angle * (Math.PI / 180))
   }
   else if (t == 1) {
     ctx.rotate( (-player[1].angle * (Math.PI / 180) + Math.PI))
   }
-
   ctx.fillRect(0, -1.5, 23, 3)
   ctx.restore();
+  // turn indicator
+  if (t == sv.active) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.beginPath();
+    ctx.moveTo(0, -15);
+    ctx.lineTo(-7, -23);
+    ctx.lineTo(7, -23);
+    ctx.fillStyle = 'blue'
+    ctx.fill();
+    ctx.restore();
+  }
 }
 
 function Ball() {
@@ -192,7 +202,6 @@ function refresh() {
 }
 
 var addToScore;
-
 function didCollide() {
   for (var i=0; i < sv.targets.length; i++) {
     var quad = Math.pow( ball.x - sv.targets[i].x, 2) + Math.pow( ball.y - sv.targets[i].y, 2)
@@ -248,6 +257,7 @@ function nextTurn() {
   $('#powerslider').val( player[sv.active].power )
   $('#angleclicker').val( player[sv.active].angle )
   $('#angleslider').val( player[sv.active].angle )
+  refresh()
 }
 
 drawTargets(10)
