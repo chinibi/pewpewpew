@@ -6,6 +6,7 @@ var sv = {
   vMax : 15, // projectile max speed
   g : 8 / 60, // gravity constant
   projR : 6, // projectile radius
+  turnArrowSpeed: 10, // speed turn arrow floats up and down
   active: 0, // whose turn is it
   winner: null, // who won
   player0 : {
@@ -14,7 +15,6 @@ var sv = {
     score: 0,
     x: 30,
     y: 30,
-    angle: 45,
     draw: drawTank
     },
   player1 : {
@@ -23,7 +23,6 @@ var sv = {
     score: 0,
     x: 770,
     y: 30,
-    angle: 45,
     draw: drawTank
     },
   targetValues : [
@@ -65,13 +64,15 @@ var player = [sv.player0, sv.player1]
     refresh()
   })
 
+  //reset button
+  $('#reset').on('click', resetGame)
+
   ///////FIRE CANNON/////////
   $('#FIRE').click( function() {
     if (!sv.ballMoving && sv.active !== null) {
       ball = new Ball()
       renderFrame()
     }
-    else {return}
   })
   ///////FIRE CANNON/////////
 
@@ -133,10 +134,26 @@ function drawTank(x, y, t) {
     ctx.save();
     ctx.translate(x, y);
     ctx.beginPath();
-    ctx.moveTo(0, -15);
-    ctx.lineTo(-7, -23);
-    ctx.lineTo(7, -23);
+    ctx.moveTo(0, 28);
+    ctx.lineTo(5, 45);
+    ctx.lineTo(-5, 45);
     ctx.fillStyle = 'blue'
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+function TurnArrow() {
+  this.x = player[sv.active].x
+  this.y = player[sv.active].y
+  this.draw = function () {
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    ctx.beginPath();
+    ctx.moveTo(0, 28);
+    ctx.lineTo(5, 45);
+    ctx.lineTo(-5, 45);
+    ctx.fillStyle = "blue";
     ctx.fill();
     ctx.restore();
   }
@@ -290,7 +307,28 @@ function isGameOver() {
   else {return false}
 }
 
-drawTargets(1)
+function resetGame() {
+  wipe()
+  sv.ballMoving = false
+  sv.targets = []
+  sv.active = 0
+  sv.winner = null
+  for (var i=0; i<2; i++) {
+    player[i].power = 50
+    player[i].angle = 45
+    player[i].score = 0
+    player[i].x = (i==0 ? 30 : 770)
+    player[i].y = 30
+  }
+  $('#powerclicker').val( player[sv.active].power )
+  $('#powerslider').val( player[sv.active].power )
+  $('#angleclicker').val( player[sv.active].angle )
+  $('#angleslider').val( player[sv.active].angle )
+  drawTargets(10)
+  refresh()
+}
+
+drawTargets(10)
 scoreboard()
 sv.player0.draw(sv.player0.x, sv.player0.y, 0)
 sv.player1.draw(sv.player1.x, sv.player1.y, 1)
