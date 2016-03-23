@@ -7,6 +7,7 @@ var sv = {
   g : 8 / 60, // gravity constant
   projR : 6, // projectile radius
   active: 0, // whose turn is it
+  winner: null, // who won
   player0 : {
     power: 50,
     angle: 45,
@@ -66,7 +67,7 @@ var player = [sv.player0, sv.player1]
 
   ///////FIRE CANNON/////////
   $('#FIRE').click( function() {
-    if (!sv.ballMoving) {
+    if (!sv.ballMoving && sv.active !== null) {
       ball = new Ball()
       renderFrame()
     }
@@ -251,6 +252,19 @@ function renderFrame() {
   }
 }
 
+// this will indicate points awarded on target hit. call it before the destroyed target is spliced from targets array
+function Number(points) {
+  this.x = sv.targets[didCollide()[1]].x
+  this.y = sv.targets[didCollide()[1]].y - canvas.height
+  this.draw = function() {
+    ctx.save()
+    ctx.scale(1, -1)
+    ctx.translate(this.x, this.y-canvas.height)
+    ctx.font = '10px lucida grande'
+    ctx.filltext(points.toString(), this.x, this.y)
+  }
+}
+
 function nextTurn() {
   sv.active = (sv.active == 0 ? 1 : 0)
   $('#powerclicker').val( player[sv.active].power )
@@ -258,9 +272,25 @@ function nextTurn() {
   $('#angleclicker').val( player[sv.active].angle )
   $('#angleslider').val( player[sv.active].angle )
   refresh()
+  isGameOver()
 }
 
-drawTargets(10)
+function isGameOver() {
+  if (sv.targets.length === 0) {
+    sv.winner = (sv.player0.score >= sv.player1.score ? 0 : 1)
+    sv.active = null
+    ctx.save();
+    ctx.scale(1,-1)
+    ctx.textAlign = 'center'
+    ctx.font = '28px lucida grande'
+    ctx.fillText('player '+(sv.winner+1)+' wins', 400, -400)
+    ctx.restore();
+    return true
+  }
+  else {return false}
+}
+
+drawTargets(1)
 scoreboard()
 sv.player0.draw(sv.player0.x, sv.player0.y, 0)
 sv.player1.draw(sv.player1.x, sv.player1.y, 1)
