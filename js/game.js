@@ -27,15 +27,15 @@ var sv = {
     power: 50,
     angle: 45,
     score: 0,
-    x: 30,
+    x: 770,
     y: 30,
     angle: 45,
     draw: drawTank
     },
-  player : [sv.player0, sv.player1]
+  // player : [sv.player0, sv.player1]
 }
 
-arr = [sv.player0, sv.player1]
+var player = [sv.player0, sv.player1]
 
 /////// EVENT LISTENERS ///////
 
@@ -44,24 +44,24 @@ arr = [sv.player0, sv.player1]
   // sliders
   $('#powerslider').on('input', function(){
     $('#powerclicker').val( $(this).val() )
-    sv.player[sv.active].power = $(this).val()
+    player[sv.active].power = $(this).val()
     refresh()
   })
   $('#angleslider').on('input', function(){
     $('#angleclicker').val( $(this).val() )
-    sv.player[sv.active].angle = $(this).val()
+    player[sv.active].angle = $(this).val()
     refresh()
   })
 
   // direct number input for fine tuned control
   $('#powerclicker').on('change', function(){
     $('#powerslider').val($(this).val())
-    sv.player[sv.active].power = $(this).val()
+    player[sv.active].power = $(this).val()
     refresh()
   })
   $('#angleclicker').on('change', function(){
     $('#angleslider').val($(this).val())
-    sv.player[sv.active].angle = $(this).val()
+    player[sv.active].angle = $(this).val()
     refresh()
   })
 
@@ -95,7 +95,7 @@ function scoreboard() {
   ctx.restore();
 }
 
-function drawTank(x, y, player) {
+function drawTank(x, y, t) {
   ctx.save();
   ctx.translate(x, y);
   ctx.beginPath();
@@ -120,20 +120,26 @@ function drawTank(x, y, player) {
   ctx.stroke();
   // barrel
   ctx.moveTo(0, 0);
-  var normRot = ctx.rotate(sv.player[player].angle * (Math.PI / 180))
-  var rvrsRot = ctx.rotate((-sv.player[player].angle * (Math.PI / 180) + Math.PI));
-  player === 0 ? normRot : rvrsRot
+
+  if (t===0) {
+    ctx.rotate(player[0].angle * (Math.PI / 180))
+  }
+  else if (t == 1) {
+    ctx.rotate( (-player[1].angle * (Math.PI / 180) + Math.PI))
+  }
+
   ctx.fillRect(0, -1.5, 23, 3)
   ctx.restore();
 }
 
 function Ball() {
-  this.x = sv.player[sv.active].x
-  this.y = sv.player[sv.active].y
+  this.x = player[sv.active].x
+  this.y = player[sv.active].y
   this.r = sv.projR
-  this.vNaught = (sv.player[sv.active].power / 100) * sv.vMax
-  this.vx = this.vNaught * Math.cos(sv.player[sv.active].angle * (Math.PI / 180))
-  this.vy = this.vNaught * Math.sin(sv.player[sv.active].angle * (Math.PI / 180))
+  this.vNaught = (player[sv.active].power / 100) * sv.vMax
+  var mod = (sv.active === 0 ? 1 : -1)
+  this.vx = mod * this.vNaught * Math.cos(player[sv.active].angle * (Math.PI / 180))
+  this.vy = this.vNaught * Math.sin(player[sv.active].angle * (Math.PI / 180))
   this.color = 'black'
   this.draw = function() {
     ctx.beginPath()
@@ -148,6 +154,7 @@ function Target() {
   this.x = 50 + (canvas.width-50-14) * Math.random()
   this.y = 64 + (canvas.height-120) * Math.random()
   this.r = 14
+  this.value = 1
   this.draw = function() {
     ctx.beginPath()
     ctx.arc(this.x, this.y, this.r, 0, 2*Math.PI)
@@ -171,10 +178,12 @@ function refresh() {
   for (var i=0; i<sv.targets.length; i++) {
     sv.targets[i].draw()
   }
-  player1.draw(player1.x, player1.y, 1)
-  player2.draw(player2.x, player2.y, 2)
+  sv.player0.draw(sv.player0.x, sv.player0.y, 0)
+  sv.player1.draw(sv.player1.x, sv.player1.y, 1)
   scoreboard()
 }
+
+var addToScore;
 
 function didCollide() {
   for (var i=0; i < sv.targets.length; i++) {
@@ -182,6 +191,8 @@ function didCollide() {
     var d = Math.sqrt(quad)
 
     if (d < ball.r + sv.targets[i].r) {
+      console.log([true, i, sv.targets[i].value])
+      addToScore = sv.targets[i].value
       return [true, i]
     }
   }
@@ -208,18 +219,27 @@ function renderFrame() {
 
   else if (didCollide()) {
     sv.targets.splice( didCollide()[1], 1)
+    player[sv.active].score += addToScore
     refresh()
     sv.ballMoving = false
-    sv.active = (sv.active == 0 ? 1 : 0)
+    nextTurn()
     return
   }
 
   else {
     refresh()
     sv.ballMoving = false
-    sv.active = (sv.active == 0 ? 1 : 0)
+    nextTurn()
     return
   }
+}
+
+function nextTurn() {
+  sv.active = (sv.active == 0 ? 1 : 0)
+  $('#powerclicker').val( player[sv.active].power )
+  $('#powerslider').val( player[sv.active].power )
+  $('#angleclicker').val( player[sv.active].angle )
+  $('#angleslider').val( player[sv.active].angle )
 }
 
 drawTargets(5)
