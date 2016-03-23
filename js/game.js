@@ -7,13 +7,6 @@ var sv = {
   g : 8 / 60, // gravity constant
   projR : 6, // projectile radius
   active: 0, // whose turn is it
-  // tank : {
-  //   power: 50,
-  //   angle: 45,
-  //   x: 30,
-  //   y: 30,
-  //   draw: drawTank
-  //   },
   player0 : {
     power: 50,
     angle: 45,
@@ -32,7 +25,13 @@ var sv = {
     angle: 45,
     draw: drawTank
     },
-  // player : [sv.player0, sv.player1]
+  targetValues : [
+     [ 1, 14, 'green'],
+     [ 2,  9, 'orange'],
+     [ 4,  5, 'blue'],
+     [-2, 12, 'black'],
+     [10,  2, 'red']
+     ]
 }
 
 var player = [sv.player0, sv.player1]
@@ -142,29 +141,38 @@ function Ball() {
   this.vy = this.vNaught * Math.sin(player[sv.active].angle * (Math.PI / 180))
   this.color = 'black'
   this.draw = function() {
+    ctx.save()
     ctx.beginPath()
     ctx.arc(this.x, this.y, this.r, 0, 2*Math.PI)
     ctx.closePath()
     ctx.fillStyle = this.color
     ctx.fill()
+    ctx.restore()
   }
 }
 
-function Target() {
+function Target(arr) {
   this.x = 50 + (canvas.width-50-14) * Math.random()
   this.y = 64 + (canvas.height-120) * Math.random()
-  this.r = 14
-  this.value = 1
+  this.r = arr[1]
+  this.value = arr[0]
+  this.color = arr[2]
   this.draw = function() {
+    if (arr[1]) {
+    ctx.save()
     ctx.beginPath()
     ctx.arc(this.x, this.y, this.r, 0, 2*Math.PI)
-    ctx.stroke()
+    ctx.fillStyle = this.color
+    ctx.fill()
+    ctx.restore()
+    }
   }
 }
 
 function drawTargets(n) {
   for (var i=0; i<n; i++) {
-    sv.targets[i] = new Target()
+    var randomIndex = Math.floor(sv.targetValues.length * Math.random())
+    sv.targets[i] = new Target(sv.targetValues[randomIndex])
     sv.targets[i].draw()
   }
 }
@@ -242,7 +250,7 @@ function nextTurn() {
   $('#angleslider').val( player[sv.active].angle )
 }
 
-drawTargets(5)
+drawTargets(10)
 scoreboard()
 sv.player0.draw(sv.player0.x, sv.player0.y, 0)
 sv.player1.draw(sv.player1.x, sv.player1.y, 1)
