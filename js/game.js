@@ -1,3 +1,9 @@
+function drawEverything() {
+  if (typeof(ball) !== 'undefined') {moveShot()}
+  refresh()
+  requestAnimationFrame(drawEverything)
+}
+
 // game variables and settings
 
 var sv = {
@@ -68,10 +74,10 @@ var player = [sv.player0, sv.player1]
   $('#reset').on('click', resetGame)
 
   ///////FIRE CANNON/////////
-  $('#FIRE').click( function() {
+  $('#FIRE').click(function() {
     if (!sv.ballMoving && sv.active !== null) {
+      sv.ballMoving = true
       ball = new Ball()
-      renderFrame()
     }
   })
   ///////FIRE CANNON/////////
@@ -130,25 +136,28 @@ function drawTank(x, y, t) {
   ctx.fillRect(0, -1.5, 23, 3)
   ctx.restore();
   // turn indicator
-  if (t == sv.active) {
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.beginPath();
-    ctx.moveTo(0, 28);
-    ctx.lineTo(5, 45);
-    ctx.lineTo(-5, 45);
-    ctx.fillStyle = 'blue'
-    ctx.fill();
-    ctx.restore();
-  }
+  // if (t == sv.active) {
+  //   ctx.save();
+  //   ctx.translate(x, y);
+  //   ctx.beginPath();
+  //   ctx.moveTo(0, 28);
+  //   ctx.lineTo(5, 45);
+  //   ctx.lineTo(-5, 45);
+  //   ctx.fillStyle = 'blue'
+  //   ctx.fill();
+  //   ctx.restore();
+  // }
 }
 
 function TurnArrow() {
   this.x = player[sv.active].x
   this.y = player[sv.active].y
+  this.phase = 0
+  this.angularVelocity = (2*Math.PI) / 60
   this.draw = function () {
+    var time = new Date();
     ctx.save();
-    ctx.translate(this.x, this.y);
+    ctx.translate(this.x, -10*Math.cos(2*Math.PI * time.getSeconds() + (2*Math.PI/1000) * time.getMilliseconds()) + 49)
     ctx.beginPath();
     ctx.moveTo(0, 28);
     ctx.lineTo(5, 45);
@@ -216,7 +225,9 @@ function refresh() {
   }
   sv.player0.draw(sv.player0.x, sv.player0.y, 0)
   sv.player1.draw(sv.player1.x, sv.player1.y, 1)
+  arrow.draw()
   scoreboard()
+  if (typeof(ball) !== 'undefined') {ball.draw()}
 }
 
 var addToScore;
@@ -234,7 +245,7 @@ function didCollide() {
   return false
 }
 
-function renderFrame() {
+function moveShot() {
   // animate until ball goes out of bounds
   if (ball.x <= canvas.width &&
     ball.x >= 0 &&
@@ -242,9 +253,6 @@ function renderFrame() {
     !didCollide()) {
 
     sv.ballMoving = true;
-    requestAnimationFrame(renderFrame)
-
-    refresh()
 
     ball.x += ball.vx
     ball.y += ball.vy
@@ -255,14 +263,14 @@ function renderFrame() {
   else if (didCollide()) {
     sv.targets.splice( didCollide()[1], 1)
     player[sv.active].score += addToScore
-    refresh()
+    ball = undefined
     sv.ballMoving = false
     nextTurn()
     return
   }
 
   else {
-    refresh()
+    ball = undefined
     sv.ballMoving = false
     nextTurn()
     return
@@ -288,6 +296,7 @@ function nextTurn() {
   $('#powerslider').val( player[sv.active].power )
   $('#angleclicker').val( player[sv.active].angle )
   $('#angleslider').val( player[sv.active].angle )
+  arrow = new TurnArrow()
   refresh()
   isGameOver()
 }
@@ -328,7 +337,9 @@ function resetGame() {
   refresh()
 }
 
+var arrow = new TurnArrow()
 drawTargets(10)
 scoreboard()
 sv.player0.draw(sv.player0.x, sv.player0.y, 0)
 sv.player1.draw(sv.player1.x, sv.player1.y, 1)
+drawEverything()
