@@ -42,12 +42,13 @@ var sv = {
     draw: drawTank
     },
   targetValues : [
-     [ 1, 14, 'green'],
-     [ 2, 11, 'blue'],
-     [ 4,  8, 'purple'],
+     [ 1, 14, '#b20000'],
+     [ 2, 11, '#ffaa00'],
+     [ 4,  8, '#00f281'],
      [-2, 12, 'black'],
-     [ 6,  4, 'red']
-     ]
+     [ 6,  4, '#39736f']
+     ],
+  onlyBlackRemains : false,
 }
 
 var player = [sv.player0, sv.player1]
@@ -109,7 +110,9 @@ function scoreboard() {
   ctx.save();
   ctx.scale(1,-1)
   ctx.font = "36px lucida grande";
+  ctx.fillStyle = 'red'
   ctx.fillText(sv.player0.score.toString(), 30, -550);
+  ctx.fillStyle = 'blue'
   ctx.fillText(sv.player1.score.toString(), 740, -550);
   ctx.restore();
 }
@@ -118,9 +121,11 @@ function drawTank(x, y, t) {
   ctx.save();
   ctx.translate(x, y);
   ctx.beginPath();
+  ctx.fillStyle = (t===0 ? 'red' : 'blue')
   // dome
   ctx.arc(0, 0, 10, 0, Math.PI);
   ctx.stroke();
+  ctx.fill();
   // treads
   ctx.moveTo(  0,  0);
   ctx.lineTo(-20,  0);
@@ -129,6 +134,7 @@ function drawTank(x, y, t) {
   ctx.lineTo( 20,  0);
   ctx.lineTo(  0,  0);
   ctx.stroke();
+  ctx.fill();
   // wheels
   ctx.moveTo(0, 0);
   ctx.arc(  0, -5, 5, Math.PI/2, Math.PI/2 + 2*Math.PI);
@@ -145,6 +151,7 @@ function drawTank(x, y, t) {
   else if (t == 1) {
     ctx.rotate( (-player[1].angle * (Math.PI / 180) + Math.PI))
   }
+  ctx.fillStyle = 'black'
   ctx.fillRect(0, -1.5, 23, 3)
   ctx.restore();
 }
@@ -164,7 +171,7 @@ function TurnArrow() {
     ctx.moveTo(0, 28);
     ctx.lineTo(5, 45);
     ctx.lineTo(-5, 45);
-    ctx.fillStyle = "blue";
+    ctx.fillStyle = (sv.active === 0 ? 'red' : 'blue');
     ctx.fill();
     ctx.restore();
   }
@@ -284,6 +291,7 @@ function moveShot() {
   else if (collideType == 'target') {
     sv.targets.splice( didCollide()[1], 1)
     player[sv.active].score += addToScore
+    if (sv.onlyBlackRemains == false) {isOnlyBlackRemaining()}
     ball = undefined
     sv.ballMoving = false
     nextTurn()
@@ -296,6 +304,18 @@ function moveShot() {
     nextTurn()
     return
   }
+}
+
+function isOnlyBlackRemaining() {
+  for (var i=0; i<sv.targets.length; i++) {
+    if (sv.targets[i].color != 'black') {
+      return
+    }
+  }
+  for (i=0; i<sv.targets.length; i++) {
+    sv.targets[i].value = 2
+  }
+  sv.onlyBlackRemains = true
 }
 
 function tankBlownUp() {
