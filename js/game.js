@@ -42,10 +42,10 @@ var sv = {
     },
   targetValues : [
      [ 1, 14, 'green'],
-     [ 2,  9, 'orange'],
-     [ 4,  5, 'blue'],
+     [ 2, 11, 'orange'],
+     [ 4,  8, 'blue'],
      [-2, 12, 'black'],
-     [10,  2, 'red']
+     [10,  4, 'red']
      ]
 }
 
@@ -80,7 +80,8 @@ var player = [sv.player0, sv.player1]
   })
 
   //reset button
-  $('#reset').on('click', resetGame)
+
+  $('#reset').on('click', function() {window.location.reload()})
 
   ///////FIRE CANNON/////////
   $('#FIRE').click(function() {
@@ -267,7 +268,7 @@ function didCollide() {
       if (d < ball.r + player[j].r) {
         player[j].vx = (ball.vx<0 ? -100/60:100/60)
         console.log(player[j].vx)
-        player[j].y++
+        player[j].y++ // bandaids
         player[j].vy = 200/60
         console.log(player[j].vy)
         collideType = 'tank'
