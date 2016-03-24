@@ -16,6 +16,7 @@ var sv = {
   g : 8 / 60, // gravity constant
   projR : 6, // projectile radius
   turnArrowSpeed: 10, // speed turn arrow floats up and down
+  numberOfTargets: 10,
   active: 0, // whose turn is it
   winner: null, // who won
   player0 : {
@@ -42,10 +43,10 @@ var sv = {
     },
   targetValues : [
      [ 1, 14, 'green'],
-     [ 2, 11, 'orange'],
-     [ 4,  8, 'blue'],
+     [ 2, 11, 'blue'],
+     [ 4,  8, 'purple'],
      [-2, 12, 'black'],
-     [10,  4, 'red']
+     [ 6,  4, 'red']
      ]
 }
 
@@ -146,18 +147,6 @@ function drawTank(x, y, t) {
   }
   ctx.fillRect(0, -1.5, 23, 3)
   ctx.restore();
-  // turn indicator
-  // if (t == sv.active) {
-  //   ctx.save();
-  //   ctx.translate(x, y);
-  //   ctx.beginPath();
-  //   ctx.moveTo(0, 28);
-  //   ctx.lineTo(5, 45);
-  //   ctx.lineTo(-5, 45);
-  //   ctx.fillStyle = 'blue'
-  //   ctx.fill();
-  //   ctx.restore();
-  // }
 }
 
 function TurnArrow() {
@@ -266,11 +255,9 @@ function didCollide() {
       d = Math.sqrt(quad)
 
       if (d < ball.r + player[j].r) {
-        player[j].vx = (ball.vx<0 ? -100/60:100/60)
-        console.log(player[j].vx)
+        player[j].vx = (ball.vx<0 ? -180/60:180/60)
         player[j].y++ // bandaids
-        player[j].vy = 200/60
-        console.log(player[j].vy)
+        player[j].vy = 500/60
         collideType = 'tank'
         console.log('tank hit detected')
         return [true, j]
@@ -338,8 +325,8 @@ function Number(points) {
   this.draw = function() {
     ctx.save()
     ctx.scale(1, -1)
-    ctx.translate(this.x, this.y-canvas.height)
-    ctx.font = '10px lucida grande'
+    ctx.translate(this.x, this.y)
+    ctx.font = '14px lucida grande'
     ctx.filltext(points.toString(), this.x, this.y)
   }
 }
@@ -371,29 +358,8 @@ function isGameOver() {
   else {return false}
 }
 
-function resetGame() {
-  wipe()
-  sv.ballMoving = false
-  sv.targets = []
-  sv.active = 0
-  sv.winner = null
-  for (var i=0; i<2; i++) {
-    player[i].power = 50
-    player[i].angle = 45
-    player[i].score = 0
-    player[i].x = (i==0 ? 30 : 770)
-    player[i].y = 30
-  }
-  $('#powerclicker').val( player[sv.active].power )
-  $('#powerslider').val( player[sv.active].power )
-  $('#angleclicker').val( player[sv.active].angle )
-  $('#angleslider').val( player[sv.active].angle )
-  drawTargets(10)
-  drawEverything()
-}
-
 var arrow = new TurnArrow()
-drawTargets(1)
+drawTargets(sv.numberOfTargets)
 scoreboard()
 sv.player0.draw(sv.player0.x, sv.player0.y, 0)
 sv.player1.draw(sv.player1.x, sv.player1.y, 1)

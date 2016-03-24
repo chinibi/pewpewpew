@@ -1,17 +1,38 @@
 body {
+  font-family: 'Play', 'lucida grande';
+  font-size: 20px;
+}
+
+#container {
+  /*padding: 0;*/
+  margin: 40px auto;
+  /*display: block;*/
   width: 800px;
+}
+
+input {
+  font-family: 'Play';
+  font-size: 24px;
 }
 
 canvas {
   border: 1px solid black;
 }
-/*#game {z-index: 2;}
-#targets {z-index: 1;}*/
 
 .sliders {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+}
+
+/* buttons */
+input[type='button'] {
+  display: block;
+  margin: 10px auto;
+}
+#FIRE {
+  background-color: #B33A3A;
+  color: white;
 }
 
 #powerslider, #angleslider {

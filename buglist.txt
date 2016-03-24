@@ -1,3 +1,1 @@
-- reset button causes projectile tank launch animations to become faster
 
-- hitting tanks sometimes fails to launch them even though a hit was detected
