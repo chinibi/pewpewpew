@@ -1,7 +1,10 @@
 function drawEverything() {
-  if (typeof(ball) !== 'undefined') {moveShot()}
-  refresh()
-  requestAnimationFrame(drawEverything)
+  if (!isGameOver()) {
+    if (typeof(ball) !== 'undefined') {moveShot()}
+    tankBlownUp()
+    refresh()
+    requestAnimationFrame(drawEverything)
+  }
 }
 
 // game variables and settings
@@ -21,6 +24,9 @@ var sv = {
     score: 0,
     x: 30,
     y: 30,
+    r: 23,
+    vx: 0,
+    vy: 0,
     draw: drawTank
     },
   player1 : {
@@ -29,6 +35,9 @@ var sv = {
     score: 0,
     x: 770,
     y: 30,
+    r: 23,
+    vx: 0,
+    vy: 0,
     draw: drawTank
     },
   targetValues : [
@@ -78,6 +87,7 @@ var player = [sv.player0, sv.player1]
     if (!sv.ballMoving && sv.active !== null) {
       sv.ballMoving = true
       ball = new Ball()
+      console.log([ball.vx, ball.vy])
     }
   })
   ///////FIRE CANNON/////////
@@ -97,8 +107,8 @@ function scoreboard() {
   ctx.save();
   ctx.scale(1,-1)
   ctx.font = "36px lucida grande";
-  ctx.fillText("Player 1: " + sv.player0.score.toString(), 30, -550);
-  ctx.fillText("Player 2: " + sv.player1.score.toString(), 580, -550);
+  ctx.fillText(sv.player0.score.toString(), 30, -550);
+  ctx.fillText(sv.player1.score.toString(), 740, -550);
   ctx.restore();
 }
 
@@ -223,15 +233,17 @@ function refresh() {
   for (var i=0; i<sv.targets.length; i++) {
     sv.targets[i].draw()
   }
-  sv.player0.draw(sv.player0.x, sv.player0.y, 0)
-  sv.player1.draw(sv.player1.x, sv.player1.y, 1)
+  sv.player0.draw(player[0].x, player[0].y, 0)
+  sv.player1.draw(player[1].x, player[1].y, 1)
   arrow.draw()
   scoreboard()
   if (typeof(ball) !== 'undefined') {ball.draw()}
 }
 
 var addToScore;
+var collideType;
 function didCollide() {
+  // hit target?
   for (var i=0; i < sv.targets.length; i++) {
     var quad = Math.pow( ball.x - sv.targets[i].x, 2) + Math.pow( ball.y - sv.targets[i].y, 2)
     var d = Math.sqrt(quad)
@@ -239,10 +251,26 @@ function didCollide() {
     if (d < ball.r + sv.targets[i].r) {
       console.log([true, i, sv.targets[i].value])
       addToScore = sv.targets[i].value
+      collideType = 'target'
       return [true, i]
     }
   }
-  return false
+
+  // hit tank?
+  if (ball.vy < 0) {
+    for (var j=0; j<2; j++) {
+      quad = Math.pow( ball.x - player[j].x, 2) + Math.pow( ball.y - player[j].y, 2)
+      d = Math.sqrt(quad)
+
+      if (d < ball.r + player[j].r) {
+        player[j].vx = (ball.vx<0 ? -100/60:100/60)
+        player[j].vy = 200/60
+        collideType = 'tank'
+        console.log('tank hit detected')
+        return [true, j]
+      }
+    }
+  }
 }
 
 function moveShot() {
@@ -260,7 +288,7 @@ function moveShot() {
     ball.draw()
   }
 
-  else if (didCollide()) {
+  else if (collideType == 'target') {
     sv.targets.splice( didCollide()[1], 1)
     player[sv.active].score += addToScore
     ball = undefined
@@ -274,6 +302,26 @@ function moveShot() {
     sv.ballMoving = false
     nextTurn()
     return
+  }
+}
+
+function tankBlownUp() {
+  for (var i=0; i<2; i++) {
+    if (player[i].y >= 30) {
+      player[i].x += player[i].vx
+      player[i].y += player[i].vy
+      player[i].vy -= sv.g
+
+      // bounce off the walls
+      if (player[i].x <= 10 || player[i].x >= 790) {
+        player[i].vx = -player[i].vx
+      }
+    }
+    else if (player[i].y < 30) {
+      player[i].y = 30
+      player[i].vx = 0
+      player[i].vy = 0
+    }
   }
 }
 
@@ -297,6 +345,7 @@ function nextTurn() {
   $('#angleclicker').val( player[sv.active].angle )
   $('#angleslider').val( player[sv.active].angle )
   arrow = new TurnArrow()
+  collideType = null
   refresh()
   isGameOver()
 }
@@ -334,11 +383,11 @@ function resetGame() {
   $('#angleclicker').val( player[sv.active].angle )
   $('#angleslider').val( player[sv.active].angle )
   drawTargets(10)
-  refresh()
+  drawEverything()
 }
 
 var arrow = new TurnArrow()
-drawTargets(10)
+drawTargets(1)
 scoreboard()
 sv.player0.draw(sv.player0.x, sv.player0.y, 0)
 sv.player1.draw(sv.player1.x, sv.player1.y, 1)
