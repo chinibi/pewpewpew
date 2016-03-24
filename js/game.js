@@ -266,7 +266,10 @@ function didCollide() {
 
       if (d < ball.r + player[j].r) {
         player[j].vx = (ball.vx<0 ? -100/60:100/60)
+        console.log(player[j].vx)
+        player[j].y++
         player[j].vy = 200/60
+        console.log(player[j].vy)
         collideType = 'tank'
         console.log('tank hit detected')
         return [true, j]
@@ -309,7 +312,7 @@ function moveShot() {
 
 function tankBlownUp() {
   for (var i=0; i<2; i++) {
-    if (player[i].y >= 30) {
+    if (player[i].y > 30) {
       player[i].x += player[i].vx
       player[i].y += player[i].vy
       player[i].vy -= sv.g
@@ -319,7 +322,7 @@ function tankBlownUp() {
         player[i].vx = -player[i].vx
       }
     }
-    else if (player[i].y < 30) {
+    else {
       player[i].y = 30
       player[i].vx = 0
       player[i].vy = 0
