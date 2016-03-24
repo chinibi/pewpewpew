@@ -15,8 +15,7 @@ var sv = {
   vMax : 15, // projectile max speed
   g : 8 / 60, // gravity constant
   projR : 6, // projectile radius
-  turnArrowSpeed: 10, // speed turn arrow floats up and down
-  numberOfTargets: 3,
+  numberOfTargets: 6,
   active: 0, // whose turn is it
   winner: null, // who won
   player0 : {
@@ -292,7 +291,7 @@ function moveShot() {
   else if (collideType == 'target') {
     sv.targets.splice( didCollide()[1], 1)
     player[sv.active].score += addToScore
-    if (sv.onlyBlackRemains == false) {isOnlyBlackRemaining()}
+    if (!sv.onlyBlackRemains) {isOnlyBlackRemaining()}
     ball = undefined
     sv.ballMoving = false
     nextTurn()
