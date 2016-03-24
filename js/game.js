@@ -16,7 +16,7 @@ var sv = {
   g : 8 / 60, // gravity constant
   projR : 6, // projectile radius
   turnArrowSpeed: 10, // speed turn arrow floats up and down
-  numberOfTargets: 10,
+  numberOfTargets: 3,
   active: 0, // whose turn is it
   winner: null, // who won
   player0 : {
@@ -209,7 +209,8 @@ function Target(arr) {
     ctx.beginPath()
     ctx.arc(this.x, this.y, this.r, 0, 2*Math.PI)
     ctx.fillStyle = this.color
-    ctx.fill()
+    ctx.strokeStyle = this.color
+    sv.onlyBlackRemains == true ? ctx.stroke() : ctx.fill()
     ctx.restore()
     }
   }
