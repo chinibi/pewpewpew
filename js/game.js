@@ -167,7 +167,9 @@ function TurnArrow() {
   this.draw = function () {
     var time = new Date();
     ctx.save();
-    ctx.translate(player[sv.active].x, -10*Math.cos(2*Math.PI * time.getSeconds() + (2*Math.PI/1000) * time.getMilliseconds()) + player[sv.active].y + 20)
+    if (sv.active != null) {
+      ctx.translate(player[sv.active].x, -10*Math.cos(2*Math.PI * time.getSeconds() + (2*Math.PI/1000) * time.getMilliseconds()) + player[sv.active].y + 20)
+    }
     ctx.beginPath();
     ctx.moveTo(0, 28);
     ctx.lineTo(5, 45);
