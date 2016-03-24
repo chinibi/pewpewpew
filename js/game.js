@@ -41,8 +41,8 @@ var sv = {
     draw: drawTank
     },
   targetValues : [
-     [ 1, 14, '#b20000'],
-     [ 2, 11, '#ffaa00'],
+     [ 2, 14, '#b20000'],
+     [ 3, 11, '#ffaa00'],
      [ 4,  8, '#00f281'],
      [-2, 12, 'black'],
      [ 6,  4, '#39736f']
@@ -262,9 +262,12 @@ function didCollide() {
       d = Math.sqrt(quad)
 
       if (d < ball.r + player[j].r) {
-        player[j].vx = (ball.vx<0 ? -180/60:180/60)
+        var vx = 100 + 200 * Math.random()
+        var vy = 300 + 300 * Math.random()
+        player[j].vx = (ball.vx<0 ? -vx/60:vx/60)
         player[j].y++ // bandaids
-        player[j].vy = 500/60
+        player[j].vy = vy/60
+        player[j].score -= 1
         collideType = 'tank'
         console.log('tank hit detected')
         return [true, j]
@@ -371,7 +374,7 @@ function isGameOver() {
     ctx.scale(1,-1)
     ctx.textAlign = 'center'
     ctx.font = '28px lucida grande'
-    ctx.fillText('player '+(sv.winner+1)+' wins', 400, -400)
+    ctx.fillText((sv.winner == 0 ? 'red':'blue')+' wins', 400, -400)
     ctx.restore();
     return true
   }
