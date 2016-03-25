@@ -60,24 +60,20 @@ var player = [sv.player0, sv.player1]
   $('#powerslider').on('input', function(){
     $('#powerclicker').val( $(this).val() )
     player[sv.active].power = $(this).val()
-    refresh()
   })
   $('#angleslider').on('input', function(){
     $('#angleclicker').val( $(this).val() )
     player[sv.active].angle = $(this).val()
-    refresh()
   })
 
   // direct number input for fine tuned control
   $('#powerclicker').on('change', function(){
     $('#powerslider').val($(this).val())
     player[sv.active].power = $(this).val()
-    refresh()
   })
   $('#angleclicker').on('change', function(){
     $('#angleslider').val($(this).val())
     player[sv.active].angle = $(this).val()
-    refresh()
   })
 
   //reset button
